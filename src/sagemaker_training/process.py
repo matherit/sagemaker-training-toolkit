@@ -34,7 +34,7 @@ from sagemaker_training import (
 
 # Default limit of the stream is 2 ** 16 KB, we can increase it to 128KB in subproc call
 _DEFAULT_BUF_SIZE = 1024 * 64
-
+logger = logging_config.get_logger()
 
 async def watch(stream, proc_per_host):
     """Process the stdout and stderr streams on the fly.
@@ -146,6 +146,7 @@ def create(cmd, error_class, processes_per_host, cwd=None, env=None, capture_err
     """
     try:
         stderr = PIPE if capture_error else None
+        logger.info("Process.create asyncio.run")
         rc, output, proc = asyncio.run(
             run_async(
                 cmd,
@@ -156,6 +157,7 @@ def create(cmd, error_class, processes_per_host, cwd=None, env=None, capture_err
                 **kwargs,
             )
         )
+        logger.info(f"Process.create asyncio.run rc, output {rc} {output}")
         return rc, output, proc
     except Exception as e:  # pylint: disable=broad-except
         six.reraise(error_class, error_class(e), sys.exc_info()[2])
@@ -179,8 +181,9 @@ def check_error(cmd, error_class, processes_per_host, cwd=None, capture_error=Tr
     Raises:
         error_class: If there is an exception raised when creating the process.
     """
-
+    logger.info("Process.check_error")
     if capture_error:
+        logger.info("Process.check_error cature_error create")
         return_code, output, process = create(
             cmd,
             error_class,
@@ -191,16 +194,21 @@ def check_error(cmd, error_class, processes_per_host, cwd=None, capture_error=Tr
             **kwargs,
         )
         stderr = output[1]
+        logger.info(f"Process.check_error create stderr {stderr}")
     else:
         stderr = None
+        logger.info(f"Process.check_error subprocess.POpen")
         process = subprocess.Popen(
             cmd, env=os.environ, cwd=cwd or environment.code_dir, stderr=stderr, **kwargs
         )
+        
         return_code = process.wait()
+        logger.info(f"Process.check_error subprocess.POpen rc: {return_code}")
     if return_code:
         extra_info = None
         if return_code == 137:
             extra_info = "OutOfMemory: Process killed by SIGKILL (signal 9)"
+        logger.info("Process.check_error raise error_class")
         raise error_class(
             cmd=" ".join(cmd) if isinstance(cmd, list) else cmd,
             return_code=return_code,
