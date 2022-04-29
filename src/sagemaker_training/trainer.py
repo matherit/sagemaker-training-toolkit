@@ -84,6 +84,8 @@ def train():
             logging_config.configure_logger(env.log_level)
             logger.info("Imported framework %s", framework_name)
             entrypoint = getattr(framework, entry_point_name)
+            logger.info(f"Entrypoint is: {entrypoint}")
+            logger.info(f"Entrypoint name is: {entry_point_name}")
             entrypoint()
         else:
             logging_config.configure_logger(env.log_level)
