@@ -35,6 +35,7 @@ from sagemaker_training import (
 # Default limit of the stream is 2 ** 16 KB, we can increase it to 128KB in subproc call
 _DEFAULT_BUF_SIZE = 1024 * 64
 logger = logging_config.get_logger()
+logger.setLevel(int(os.environ.get('SM_LOG_LEVEL', logging_config.INFO)))
 
 async def watch(stream, proc_per_host):
     """Process the stdout and stderr streams on the fly.
