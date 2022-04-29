@@ -51,11 +51,11 @@ def log_script_invocation(cmd, env_vars, logger=None):
         logger (logging.Logger): Logger used to log the message.
     """
     logger = logger or get_logger()
-
+    import traceback
     prefix = "\n".join(["%s=%s" % (key, value) for key, value in env_vars.items()])
     env = sagemaker_training.environment.Environment()
     message = """Invoking user script
-
+    
 Training Env:
 
 %s
@@ -67,10 +67,10 @@ Environment variables:
 Invoking script with the following command:
 
 %s
-
+%s
 """ % (
         json.dumps(dict(env), indent=4),
         prefix,
-        " ".join(cmd),
+        " ".join(cmd), traceback.print_stack(),
     )
     logger.info(message)
