@@ -118,16 +118,16 @@ async def run_async(cmd, processes_per_host, env, cwd, stderr, **kwargs):
         cmd, env=env, cwd=cwd, stdout=PIPE, stderr=stderr, **kwargs
     )
 
-    stdout, stderr = await proc.communicate()
-
-    output = await asyncio.gather(
-        watch(stdout, processes_per_host), watch(stderr, processes_per_host)
-    )
+    # stdout, stderr = await proc.communicate()
 
     # output = await asyncio.gather(
-    #     watch(proc.stdout, processes_per_host), watch(proc.stderr, processes_per_host)
+    #     watch(stdout, processes_per_host), watch(stderr, processes_per_host)
     # )
-    return_code = proc.returncode
+
+    output = await asyncio.gather(
+        watch(proc.stdout, processes_per_host), watch(proc.stderr, processes_per_host)
+    )
+    return_code = await proc.wait()
     return return_code, output, proc
 
 
